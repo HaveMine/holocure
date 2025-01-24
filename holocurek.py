@@ -40,9 +40,15 @@ swing_direction = 1
 has_sword = False
 player_direction = "right"  # Default direction
 
+# Player level and experience
+player_level = 1
+current_exp = 0
+exp_to_next_level = 100
+
 # Enemy settings
 enemy_size = 30
 enemy_health = 50
+enemy_exp_drop = 25  # Default EXP each enemy drops
 enemies = []
 enemy_spawn_rate = 30  # Frames until a new enemy spawns
 
@@ -146,6 +152,16 @@ def check_collision():
             else:
                 player_health -= 1
 
+def gain_exp(amount):
+    global current_exp, player_level, exp_to_next_level, player_health
+    current_exp += amount
+    while current_exp >= exp_to_next_level:
+        current_exp -= exp_to_next_level
+        player_level += 1
+        exp_to_next_level = int(exp_to_next_level * 1.5)  # Increase the EXP required for the next level
+        player_health += 10  # Increase max health as a reward for leveling up
+        print(f"Level Up! You are now level {player_level}!")
+
 def check_sword_collision(sword_coords):
     global enemies, coins
     if not sword_coords:
@@ -160,6 +176,7 @@ def check_sword_collision(sword_coords):
             enemy[2] -= sword_damage
             if enemy[2] <= 0:
                 coins += random.choices([0, 1, 2], weights=[60, 30, 10])[0]
+                gain_exp(enemy_exp_drop)  # Gain EXP for defeating the enemy
             else:
                 updated_enemies.append(enemy)
         else:
@@ -169,7 +186,7 @@ def check_sword_collision(sword_coords):
 def punch():
     global enemies, coins
     punch_rect = pygame.Rect(player_pos[0] - attack_radius, player_pos[1] - attack_radius, 
-                             player_size + 2 * attack_radius, player_size + 2 * attack_radius)
+                             player_size + 2 * attack_radius, player_size + attack_radius * 2)
     updated_enemies = []
     for enemy in enemies:
         enemy_rect = pygame.Rect(*enemy[:2], enemy_size, enemy_size)
@@ -177,6 +194,7 @@ def punch():
             enemy[2] -= fist_damage
             if enemy[2] <= 0:
                 coins += random.choices([0, 1, 2], weights=[60, 30, 10])[0]
+                gain_exp(enemy_exp_drop)  # Gain EXP for defeating the enemy
             else:
                 updated_enemies.append(enemy)
         else:
@@ -216,6 +234,12 @@ def draw_coin_count():
     coin_text = font.render(f"Coins: {coins}", True, BLACK)
     screen.blit(coin_text, (10, 110))
 
+def draw_level_and_exp():
+    level_text = font.render(f"Level: {player_level}", True, BLACK)
+    exp_text = font.render(f"EXP: {current_exp}/{exp_to_next_level}", True, BLACK)
+    screen.blit(level_text, (10, 140))
+    screen.blit(exp_text, (10, 170))
+
 # Main game loop
 frame_count = 0
 while running:
@@ -248,6 +272,7 @@ while running:
     draw_enemies()
     draw_health_bar()
     draw_coin_count()
+    draw_level_and_exp()
 
     if swinging:
         check_sword_collision(sword_coords)
