@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "holocurek"
+version = "1.0.0"
+description = "A 2D roguelike gacha game with leveling and experience system."
+authors = ["HaveMine"]
+license = "The Unlicense"
+
+[tool.poetry.dependencies]
+python = ">=3.8"
+pygame = ">=2.0.0"
+
+[tool.poetry.scripts]
+start = "python holocurek.py"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
