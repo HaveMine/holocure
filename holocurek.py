@@ -31,7 +31,7 @@ player_health = 100
 player_shield = 0  # Initialize shield value
 max_shield = 0  # Track maximum shield value for stacking
 shield_active = False  # Tracks if shield effect is active
-sword_damage = 20
+sword_damage = 50
 fist_damage = sword_damage // 2
 attack_radius = 50  # Adjustable attack radius for punches
 swinging = False
@@ -74,7 +74,7 @@ def spawn_enemy():
 def draw_player():
     pygame.draw.rect(screen, BLUE, (*player_pos, player_size, player_size))
     if has_sword:
-        sword_length = 30
+        sword_length = 50
         sword_width = 5
         center_x = player_pos[0] + player_size // 2
         center_y = player_pos[1] + player_size // 2
