@@ -40,7 +40,7 @@ A simple 2D roguelike game built with **Pygame**, featuring:
 
 ## 🛡️ Game Features
 
-- **Movement**: Move freely around the 800x600 window.
+- **Movement**: Move freely around the 800x600 window (adjustable).
 - **Attacks**:
   - **Sword Attack**: If you have pulled a sword via gacha, you can swing it.
   - **Punch Attack**: If you don't have a sword, you'll punch enemies.
