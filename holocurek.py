@@ -1,6 +1,7 @@
 import pygame
 import random
 import math
+import os
 
 # Initialize Pygame
 pygame.init()
@@ -9,6 +10,9 @@ pygame.init()
 SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("2D Roguelike Gacha Game")
+
+# Dialog box dimensions
+DIALOG_WIDTH, DIALOG_HEIGHT = 400, 200
 
 # Clock and FPS
 clock = pygame.time.Clock()
@@ -23,34 +27,38 @@ GREEN = (0, 255, 0)
 BROWN = (139, 69, 19)
 GRAY = (169, 169, 169)
 
+# Load sounds
+level_up_sound = pygame.mixer.Sound(os.path.join("assets", "level_up.wav"))
+
 # Player settings
 player_size = 40
 player_pos = [SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2]
 player_speed = 5
 player_health = 100
-player_shield = 0  # Initialize shield value
-max_shield = 0  # Track maximum shield value for stacking
-shield_active = False  # Tracks if shield effect is active
+player_shield = 0
+max_shield = 0
+shield_active = False
 sword_damage = 50
 fist_damage = sword_damage // 2
-attack_radius = 50  # Adjustable attack radius for punches
+attack_radius = 50
 swinging = False
 swing_angle = 0
 swing_direction = 1
 has_sword = False
-player_direction = "right"  # Default direction
+player_direction = "right"
 
 # Player level and experience
-player_level = 1
+player_level = 0
 current_exp = 0
 exp_to_next_level = 100
+level_up_pending = False
 
 # Enemy settings
 enemy_size = 30
 enemy_health = 50
-enemy_exp_drop = 25  # Default EXP each enemy drops
+enemy_exp_drop = 25
 enemies = []
-enemy_spawn_rate = 30  # Frames until a new enemy spawns
+enemy_spawn_rate = 30
 
 # Gacha items
 items = ["Sword", "Shield", "Bow", "Fireball"]
@@ -139,6 +147,8 @@ def gacha_pull():
 
 def check_collision():
     global player_health, player_shield, max_shield, shield_active
+    if level_up_pending:
+        return
     player_rect = pygame.Rect(*player_pos, player_size, player_size)
     for enemy in enemies:
         enemy_rect = pygame.Rect(*enemy[:2], enemy_size, enemy_size)
@@ -153,22 +163,22 @@ def check_collision():
                 player_health -= 1
 
 def gain_exp(amount):
-    global current_exp, player_level, exp_to_next_level, player_health
+    global current_exp, player_level, exp_to_next_level, player_health, level_up_pending
     current_exp += amount
     while current_exp >= exp_to_next_level:
         current_exp -= exp_to_next_level
         player_level += 1
-        exp_to_next_level = int(exp_to_next_level * 1.5)  # Increase the EXP required for the next level
-        player_health += 10  # Increase max health as a reward for leveling up
-        print(f"Level Up! You are now level {player_level}!")
+        exp_to_next_level = int(exp_to_next_level * 1.5)
+        player_health += 10
+        level_up_sound.play()
+        level_up_pending = True
 
 def check_sword_collision(sword_coords):
     global enemies, coins
     if not sword_coords:
         return
     center_x, center_y, sword_x, sword_y = sword_coords
-    sword_rect = pygame.Rect(min(center_x, sword_x), min(center_y, sword_y), 
-                             abs(sword_x - center_x), abs(sword_y - center_y))
+    sword_rect = pygame.Rect(min(center_x, sword_x), min(center_y, sword_y), abs(sword_x - center_x), abs(sword_y - center_y))
     updated_enemies = []
     for enemy in enemies:
         enemy_rect = pygame.Rect(*enemy[:2], enemy_size, enemy_size)
@@ -176,7 +186,7 @@ def check_sword_collision(sword_coords):
             enemy[2] -= sword_damage
             if enemy[2] <= 0:
                 coins += random.choices([0, 1, 2], weights=[60, 30, 10])[0]
-                gain_exp(enemy_exp_drop)  # Gain EXP for defeating the enemy
+                gain_exp(enemy_exp_drop)
             else:
                 updated_enemies.append(enemy)
         else:
@@ -185,8 +195,7 @@ def check_sword_collision(sword_coords):
 
 def punch():
     global enemies, coins
-    punch_rect = pygame.Rect(player_pos[0] - attack_radius, player_pos[1] - attack_radius, 
-                             player_size + 2 * attack_radius, player_size + attack_radius * 2)
+    punch_rect = pygame.Rect(player_pos[0] - attack_radius, player_pos[1] - attack_radius, player_size + 2 * attack_radius, player_size + attack_radius * 2)
     updated_enemies = []
     for enemy in enemies:
         enemy_rect = pygame.Rect(*enemy[:2], enemy_size, enemy_size)
@@ -194,7 +203,7 @@ def punch():
             enemy[2] -= fist_damage
             if enemy[2] <= 0:
                 coins += random.choices([0, 1, 2], weights=[60, 30, 10])[0]
-                gain_exp(enemy_exp_drop)  # Gain EXP for defeating the enemy
+                gain_exp(enemy_exp_drop)
             else:
                 updated_enemies.append(enemy)
         else:
@@ -240,6 +249,15 @@ def draw_level_and_exp():
     screen.blit(level_text, (10, 140))
     screen.blit(exp_text, (10, 170))
 
+def draw_level_up_dialog():
+    dialog_surface = pygame.Surface((DIALOG_WIDTH, DIALOG_HEIGHT))
+    dialog_surface.fill(WHITE)
+    pygame.draw.rect(dialog_surface, BLACK, (0, 0, DIALOG_WIDTH, DIALOG_HEIGHT), 5)
+    text = font.render("Level Up! Press ENTER", True, BLACK)
+    text_rect = text.get_rect(center=(DIALOG_WIDTH // 2, DIALOG_HEIGHT // 2))
+    dialog_surface.blit(text, text_rect)
+    screen.blit(dialog_surface, (SCREEN_WIDTH // 2 - DIALOG_WIDTH // 2, SCREEN_HEIGHT // 2 - DIALOG_HEIGHT // 2))
+
 # Main game loop
 frame_count = 0
 while running:
@@ -249,24 +267,26 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_g:
-                result = gacha_pull()
-                print(result)
-            if event.key == pygame.K_SPACE:
-                if has_sword:
-                    swing_sword()
-                else:
-                    punch()
+            if not level_up_pending:
+                if event.key == pygame.K_g:
+                    result = gacha_pull()
+                    print(result)
+                if event.key == pygame.K_SPACE:
+                    if has_sword:
+                        swing_sword()
+                    else:
+                        punch()
+            if level_up_pending and event.key == pygame.K_RETURN:
+                level_up_pending = False
 
-    keys = pygame.key.get_pressed()
-    move_player(keys)
-    update_swing()
-
-    frame_count += 1
-    if frame_count % enemy_spawn_rate == 0:
-        spawn_enemy()
-
-    check_collision()
+    if not level_up_pending:
+        keys = pygame.key.get_pressed()
+        move_player(keys)
+        update_swing()
+        frame_count += 1
+        if frame_count % enemy_spawn_rate == 0:
+            spawn_enemy()
+        check_collision()
 
     sword_coords = draw_player()
     draw_enemies()
@@ -274,11 +294,14 @@ while running:
     draw_coin_count()
     draw_level_and_exp()
 
-    if swinging:
+    if swinging and not level_up_pending:
         check_sword_collision(sword_coords)
 
     inventory_text = font.render(f"Inventory: {', '.join(inventory[-3:])}", True, BLACK)
     screen.blit(inventory_text, (10, 10))
+
+    if level_up_pending:
+        draw_level_up_dialog()
 
     pygame.display.flip()
     clock.tick(FPS)
