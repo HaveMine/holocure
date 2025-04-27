@@ -19,10 +19,7 @@ A simple 2D roguelike game built with **Pygame**, featuring:
    pip install pygame
    ```
 
-2. **Prepare Assets**  
-   Create an `assets/` folder in the same directory and put a `level_up.wav` sound file inside it.
-
-3. **Run the game**
+2. **Run the game**
 
    ```bash
    python your_script_name.py
