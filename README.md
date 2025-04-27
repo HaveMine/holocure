@@ -18,7 +18,7 @@ A simple 2D roguelike game built with **Pygame**, featuring:
    ```bash
    pip install pygame
    ```
-
+   
 2. **Run the game**
 
    ```bash
@@ -52,6 +52,20 @@ A simple 2D roguelike game built with **Pygame**, featuring:
 - **Coin Drops**: Enemies drop coins upon defeat.
 - **Health and Shield Bars**: Displayed at the top left.
 - **Inventory**: Displays your last 3 gacha pulls.
+
+---
+
+## 🤔 Why Pygame?
+
+I chose **Pygame** because I'm still learning and prefer something simple, lightweight, and easy to set up without installing heavy software or full game engines. 
+
+**Pygame** is a great tool for beginners and prototyping because:
+- It only requires Python and a simple library installation.
+- It allows full control over your game's logic and graphics.
+- It's lightweight and fast for 2D game development.
+- The documentation and community examples make learning very approachable.
+
+If you're new to making games, **Pygame** is a fantastic place to start!
 
 ---
 
