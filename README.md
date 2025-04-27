@@ -22,7 +22,7 @@ A simple 2D roguelike game built with **Pygame**, featuring:
 2. **Run the game**
 
    ```bash
-   python your_script_name.py
+   python holocurek.py
    ```
 
 ---
