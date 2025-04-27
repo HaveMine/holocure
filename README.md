@@ -73,7 +73,7 @@ If you're new to making games, **Pygame** is a fantastic place to start!
 
 For any questions, suggestions, or collaborations, feel free to reach out:
 
-**Email:** reach.kinghavemine@gmail.com
+**Email:** reach.havemine@gmail.com
 
 ---
 
