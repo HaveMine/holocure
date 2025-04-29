@@ -12,7 +12,7 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("2D Roguelike Gacha Game")
 
 # Dialog box dimensions
-DIALOG_WIDTH, DIALOG_HEIGHT = 400, 200
+DIALOG_WIDTH, DIALOG_HEIGHT = 600, 350
 
 # Clock and FPS
 clock = pygame.time.Clock()
@@ -72,6 +72,16 @@ font = pygame.font.Font(None, 36)
 
 # Game loop flag
 running = True
+
+# --- Skill Choice Additions Start ---
+skill_choices = ["Skill 1", "Skill 2", "Skill 3"]
+skill_descriptions = [
+    "Increases attack power.",
+    "Grants temporary invincibility.",
+    "Heals some HP."
+]
+selected_skill_index = 0
+# --- Skill Choice Additions End ---
 
 # Functions
 def spawn_enemy():
@@ -258,6 +268,30 @@ def draw_level_up_dialog():
     dialog_surface.blit(text, text_rect)
     screen.blit(dialog_surface, (SCREEN_WIDTH // 2 - DIALOG_WIDTH // 2, SCREEN_HEIGHT // 2 - DIALOG_HEIGHT // 2))
 
+# --- Skill Choice Additions Start ---
+def draw_skill_choices():
+    draw_level_up_dialog()
+    for i, skill in enumerate(skill_choices):
+        color = RED if i == selected_skill_index else BLACK
+        skill_text = font.render(skill, True, color)
+        desc_text = font.render(skill_descriptions[i], True, color)
+        x = SCREEN_WIDTH // 2 - DIALOG_WIDTH // 2 + 20
+        y = SCREEN_HEIGHT // 2 - DIALOG_HEIGHT // 2 + 60 + i * 40
+        screen.blit(skill_text, (x, y))
+        screen.blit(desc_text, (x + 150, y))
+
+def apply_skill(index):
+    global sword_damage, player_health, player_shield, shield_active, max_shield
+    if index == 0:
+        sword_damage += 10
+    elif index == 1:
+        player_shield += 100
+        max_shield += 100
+        shield_active = True
+    elif index == 2:
+        player_health = min(100, player_health + 30)
+# --- Skill Choice Additions End ---
+
 # Main game loop
 frame_count = 0
 while running:
@@ -276,8 +310,17 @@ while running:
                         swing_sword()
                     else:
                         punch()
-            if level_up_pending and event.key == pygame.K_RETURN:
-                level_up_pending = False
+            # --- Skill Choice Additions Start ---
+            if level_up_pending:
+                if event.key == pygame.K_LEFT:
+                    selected_skill_index = (selected_skill_index - 1) % len(skill_choices)
+                elif event.key == pygame.K_RIGHT:
+                    selected_skill_index = (selected_skill_index + 1) % len(skill_choices)
+                elif event.key == pygame.K_RETURN:
+                    apply_skill(selected_skill_index)
+                    level_up_pending = False
+                    selected_skill_index = 0
+            # --- Skill Choice Additions End ---
 
     if not level_up_pending:
         keys = pygame.key.get_pressed()
@@ -300,8 +343,10 @@ while running:
     inventory_text = font.render(f"Inventory: {', '.join(inventory[-3:])}", True, BLACK)
     screen.blit(inventory_text, (10, 10))
 
+    # --- Skill Choice Additions Start ---
     if level_up_pending:
-        draw_level_up_dialog()
+        draw_skill_choices()
+    # --- Skill Choice Additions End ---
 
     pygame.display.flip()
     clock.tick(FPS)
