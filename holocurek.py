@@ -53,6 +53,8 @@ current_exp = 0
 exp_to_next_level = 100
 level_up_pending = False
 
+show_stats = False
+
 # Enemy settings
 enemy_size = 30
 enemy_health = 50
@@ -90,12 +92,18 @@ def spawn_enemy():
     enemies.append([x, y, enemy_health])
 
 def draw_player():
+    # Hitbox lingkaran radius damage
+    center_x = player_pos[0] + player_size // 2
+    center_y = player_pos[1] + player_size // 2
+    pygame.draw.circle(screen, RED, (center_x, center_y), attack_radius + player_size // 2, 1)
+
+    # Gambar karakter
     pygame.draw.rect(screen, BLUE, (*player_pos, player_size, player_size))
+
+    # Gambar pedang jika ada
     if has_sword:
         sword_length = 50
         sword_width = 5
-        center_x = player_pos[0] + player_size // 2
-        center_y = player_pos[1] + player_size // 2
 
         angle_rad = math.radians(swing_angle)
         if player_direction == "right":
@@ -113,6 +121,7 @@ def draw_player():
 
         pygame.draw.line(screen, BROWN, (center_x, center_y), (sword_x, sword_y), sword_width)
         return (center_x, center_y, sword_x, sword_y)
+
     return None
 
 def draw_enemies():
@@ -269,6 +278,29 @@ def draw_level_up_dialog():
     screen.blit(dialog_surface, (SCREEN_WIDTH // 2 - DIALOG_WIDTH // 2, SCREEN_HEIGHT // 2 - DIALOG_HEIGHT // 2))
 
 # --- Skill Choice Additions Start ---
+
+def draw_player_stats():
+    stats_surface = pygame.Surface((DIALOG_WIDTH, DIALOG_HEIGHT))
+    stats_surface.fill(WHITE)
+    pygame.draw.rect(stats_surface, BLACK, (0, 0, DIALOG_WIDTH, DIALOG_HEIGHT), 5)
+
+    lines = [
+        f"Level: {player_level}",
+        f"Health: {player_health}",
+        f"Shield: {player_shield}/{max_shield}",
+        f"Sword Damage: {sword_damage}",
+        f"Fist Damage: {fist_damage}",
+        f"Attack Radius: {attack_radius}",
+        f"EXP: {current_exp}/{exp_to_next_level}"
+    ]
+
+    for i, line in enumerate(lines):
+        text = font.render(line, True, BLACK)
+        stats_surface.blit(text, (20, 20 + i * 40))
+
+    screen.blit(stats_surface, (SCREEN_WIDTH // 2 - DIALOG_WIDTH // 2, SCREEN_HEIGHT // 2 - DIALOG_HEIGHT // 2))
+
+
 def draw_skill_choices():
     draw_level_up_dialog()
     for i, skill in enumerate(skill_choices):
@@ -301,6 +333,8 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_TAB:
+                show_stats = not show_stats
             if not level_up_pending:
                 if event.key == pygame.K_g:
                     result = gacha_pull()
@@ -320,6 +354,7 @@ while running:
                     apply_skill(selected_skill_index)
                     level_up_pending = False
                     selected_skill_index = 0
+
             # --- Skill Choice Additions End ---
 
     if not level_up_pending:
@@ -346,6 +381,8 @@ while running:
     # --- Skill Choice Additions Start ---
     if level_up_pending:
         draw_skill_choices()
+    if show_stats and not level_up_pending:
+        draw_player_stats()
     # --- Skill Choice Additions End ---
 
     pygame.display.flip()
