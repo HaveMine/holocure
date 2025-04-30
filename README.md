@@ -34,7 +34,8 @@ A simple 2D roguelike game built with **Pygame**, featuring:
 | `W/A/S/D` | Move Up/Left/Down/Right |
 | `G` | Perform a Gacha pull (costs 10 coins) |
 | `SPACE` | Attack (swing sword if available, otherwise punch) |
-| `ENTER` | Confirm level up |
+| `ENTER` | Confirm |
+| `TAB` | Your Stats |
 
 ---
 
