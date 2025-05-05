@@ -67,7 +67,7 @@ items = ["Sword", "Shield", "Bow", "Fireball"]
 inventory = []
 
 # Coins
-coins = 0
+coins = 100
 
 # Fonts
 font = pygame.font.Font(None, 36)
